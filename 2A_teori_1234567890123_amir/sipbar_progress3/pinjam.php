@@ -1,6 +1,10 @@
 <?php
 require "proses/session.php";
 $select = mysqli_query($conn, "SELECT * FROM tb_barang");
+
+$sql    = mysqli_query($conn, "SELECT * FROM tb_peminjaman pem
+LEFT JOIN tb_barang brg ON pem.barang=brg.kode_barang
+LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user");
 ?>
 <!doctype html>
 <html lang="en">
@@ -39,7 +43,9 @@ $select = mysqli_query($conn, "SELECT * FROM tb_barang");
                         Data Barang
                     </h5>
                     <div class="card-body">
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tambahdatabarang">Tambah Data Barang</button>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tambahdatabarang">Tambah Peminjaman</button>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#listpeminjaman">List Peminjaman</button>
+
                         <table class="table table-striped table-hover">
                             <thead>
                                 <tr>
@@ -135,7 +141,7 @@ $select = mysqli_query($conn, "SELECT * FROM tb_barang");
             </div>
             <!-- Akhir Isi Konten -->
 
-            <!-- Modal Edit-->
+            <!-- Modal Tambah Data Barang-->
             <div class="modal fade" id="tambahdatabarang" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -170,7 +176,66 @@ $select = mysqli_query($conn, "SELECT * FROM tb_barang");
                     </div>
                 </div>
             </div>
-            <!-- Akhir Modal Edit-->
+            <!-- Akhir Modal Tambah Data Barang-->
+
+            <!-- Modal List Peminjaman-->
+            <div class="modal fade" id="listpeminjaman" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">List Peminjaman</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">No</th>
+                                        <th scope="col">Barang</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Peminjam</th>
+                                        <th scope="col">Waktu Peminjaman</th>
+                                        <th scope="col">Waktu Pengembalian</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $no = 0;
+                                    while ($hasil = mysqli_fetch_array($sql)) {
+                                        $no++;
+                                    ?>
+                                        <tr>
+                                            <td scope="row"><?php echo $no ?></td>
+                                            <td><?php echo $hasil['nama_barang']; ?></td>
+                                            <td><?php
+                                                if ($hasil['status'] == '1') {
+                                                    $status = 'Disetujui';
+                                                } elseif ($hasil['status'] == '2') {
+                                                    $status = 'Ditolak';
+                                                } elseif ($hasil['status'] == '3') {
+                                                    $status = 'Dipending';
+                                                }
+                                                echo $status;
+                                                ?></td>
+                                            <td>
+                                                <?php echo $hasil['nama'] . "<br>"; ?>
+                                                <?php echo $hasil['kelas'] . "<br>"; ?>
+                                                <?php echo $hasil['prodi'] . "<br>"; ?>
+                                            </td>
+                                        </tr>
+
+                                    <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keluar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Akhir Modal List Peminjaman-->
+
         </div>
     </div>
 
