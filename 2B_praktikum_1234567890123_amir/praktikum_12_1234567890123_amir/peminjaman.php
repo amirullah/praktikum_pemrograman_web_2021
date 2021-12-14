@@ -1,9 +1,15 @@
 <?php
 require "proses/session.php";
 require "proses/koneksi.php";
-$sql    = mysqli_query($conn, "SELECT * FROM tb_barang");
-$select = mysqli_query($conn, "SELECT * FROM tb_peminjaman pem
+$sql    = mysqli_query($conn, "SELECT * FROM tb_peminjaman pem
 LEFT JOIN tb_barang brg ON pem.barang=brg.kode_barang
+LEFT JOIN tb_user usr ON pem.user=usr.id
+LEFT JOIN tb_matakuliah mk ON pem.matakuliah=mk.id_matakuliah
+WHERE username='$_SESSION[username]'
+");
+
+$select = mysqli_query($conn, "SELECT * FROM tb_peminjaman pem
+RIGHT JOIN tb_barang brg ON pem.barang=brg.kode_barang
 LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
 ");
 ?>
@@ -41,7 +47,9 @@ LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
                 <div class="card">
                     <h5 class="card-header">Peminjaman Barang</h5>
                     <div class="card-body">
-                        <button class="btn btn-success">Tambah Peminjaman</button>
+                        <!-- Tombol Tambah Peminjaman -->
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modaltambah">Tambah Peminjaman</button>
+                        <!-- Akhir Tombol Tambah Peminjaman -->
 
                         <!-- Tombol List Peminjaman -->
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#listpeminjaman">List Peminjaman</button>
@@ -55,6 +63,10 @@ LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
                                     <th scope="col">Nama Barang</th>
                                     <th scope="col">Keterangan</th>
                                     <th scope="col">Stok</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Waktu Peminjaman</th>
+                                    <th scope="col">Waktu Pengembalian</th>
+                                    <th scope="col">Matakuliah</th>
                                     <th scope="col">Aksi</th>
                                 </tr>
                             </thead>
@@ -71,6 +83,23 @@ LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
                                         <td><?php echo $data['keterangan']; ?></td>
                                         <td><?php echo $data['stok']; ?></td>
                                         <td>
+                                            <?php
+                                            if ($data['status'] == 1) {
+                                                $status = "Pending";
+                                            } elseif ($data['status'] == 2) {
+                                                $status = "Disetujui";
+                                            } elseif ($data['status'] == 3) {
+                                                $status = "Ditolak";
+                                            } else {
+                                                $status = "";
+                                            }
+                                            echo $status;
+                                            ?>
+                                        </td>
+                                        <td><?php echo $data['waktu_peminjaman']; ?></td>
+                                        <td><?php echo $data['waktu_pengembalian']; ?></td>
+                                        <td><?php echo $data['nm_matakuliah']; ?></td>
+                                        <td>
                                             <button data-bs-toggle="modal" data-bs-target="#exampleModal<?php echo $no ?>" type="button" class="btn btn-warning"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                                                     <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                                                     <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
@@ -80,33 +109,46 @@ LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
                                                 </svg></button>
                                         </td>
                                     </tr>
-                                    <!-- Modal Edit Data Barang -->
+                                    <!-- Modal Edit Peminjaman -->
                                     <div class="modal fade" id="exampleModal<?php echo $no ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-lg">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title" id="exampleModalLabel">Ubah Data Barang</h5>
+                                                    <h5 class="modal-title" id="exampleModalLabel">Ubah Peminjaman</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
-                                                <form method="POST" action="proses/proses_ubah_data_barang.php">
-                                                    <input type="hidden" name="kd_brg" value="<?php echo $data['kode_barang'] ?>">
+                                                <form method="POST" action="proses/proses_tambah_peminjaman.php">
                                                     <div class="modal-body">
-                                                        <div class=" mb-3">
-                                                            <label class="col-form-label">Kode Barang:</label>
-                                                            <input type="number" class="form-control" value="<?php echo $data['kode_barang'] ?>" disabled>
-                                                        </div>
+                                                        <!-- Untuk select data barang -->
                                                         <div class="mb-3">
                                                             <label class="col-form-label">Nama Barang:</label>
-                                                            <input name="nm_brg" type="text" class="form-control" value="<?php echo $data['nama_barang'] ?>">
+                                                            <select name="barang" class="form-select" aria-label="Default select example">
+                                                                <?php
+                                                                $query = mysqli_query($conn, "SELECT * FROM tb_barang");
+                                                                while ($hasil_select = mysqli_fetch_array($query)) {
+                                                                    if ($hasil_select['kode_barang'] == $data['kode_barang']) {
+                                                                        echo "<option selected value='" . $hasil_select['kode_barang'] . "'>" . $hasil_select['kode_barang'] . " " . $hasil_select['nama_barang'] . "</option>";
+                                                                    } else {
+                                                                        echo "<option value='" . $hasil_select['kode_barang'] . "'>" . $hasil_select['kode_barang'] . " " . $hasil_select['nama_barang'] . "</option>";
+                                                                    }
+                                                                }
+                                                                ?>
+                                                            </select>
                                                         </div>
+                                                        <!-- Akhir untuk select data barang -->
+                                                        <!-- Untuk select matakuliah -->
                                                         <div class="mb-3">
-                                                            <label class="col-form-label">Keterangan:</label>
-                                                            <input name="ket" type="text" class="form-control" value="<?php echo $data['keterangan'] ?>">
+                                                            <label class="col-form-label">Nama Matakuliah:</label>
+                                                            <select name="matakuliah" class="form-select" aria-label="Default select example">
+                                                                <?php
+                                                                $query1 = mysqli_query($conn, "SELECT * FROM tb_matakuliah");
+                                                                while ($hasil_select1 = mysqli_fetch_array($query1)) {
+                                                                    echo "<option value='" . $hasil_select1['id_matakuliah'] . "'>" . $hasil_select1['id_matakuliah'] . " " . $hasil_select1['nm_matakuliah'] . "</option>";
+                                                                }
+                                                                ?>
+                                                            </select>
                                                         </div>
-                                                        <div class="mb-3">
-                                                            <label class="col-form-label">Stok Barang:</label>
-                                                            <input name="stok" type="text" class="form-control" value="<?php echo $data['stok'] ?>">
-                                                        </div>
+                                                        <!-- Akhir untuk select matakuliah -->
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -116,7 +158,7 @@ LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- Akhir Modal Edit Data Barang -->
+                                    <!-- Akhir Modal Edit Peminjaman -->
 
                                     <!-- Modal Hapus Data Barang -->
                                     <div class="modal fade" id="ModalHapus<?php echo $no ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -148,6 +190,53 @@ LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
                 </div>
             </div>
         </div>
+
+        <!-- Modal Tambah Peminjaman -->
+        <div class="modal fade" id="modaltambah" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Tambah Peminjaman</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="proses/proses_tambah_peminjaman.php">
+                        <div class="modal-body">
+                            <!-- Untuk select data barang -->
+                            <div class="mb-3">
+                                <label class="col-form-label">Nama Barang:</label>
+                                <select name="barang" class="form-select" aria-label="Default select example">
+                                    <?php
+                                    $query = mysqli_query($conn, "SELECT * FROM tb_barang");
+                                    while ($hasil_select = mysqli_fetch_array($query)) {
+                                        echo "<option value='" . $hasil_select['kode_barang'] . "'>" . $hasil_select['kode_barang'] . " " . $hasil_select['nama_barang'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <!-- Akhir untuk select data barang -->
+                            <!-- Untuk select matakuliah -->
+                            <div class="mb-3">
+                                <label class="col-form-label">Nama Matakuliah:</label>
+                                <select name="matakuliah" class="form-select" aria-label="Default select example">
+                                    <?php
+                                    $query1 = mysqli_query($conn, "SELECT * FROM tb_matakuliah");
+                                    while ($hasil_select1 = mysqli_fetch_array($query1)) {
+                                        echo "<option value='" . $hasil_select1['id_matakuliah'] . "'>" . $hasil_select1['id_matakuliah'] . " " . $hasil_select1['nm_matakuliah'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <!-- Akhir untuk select matakuliah -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Akhir Modal Tambah Peminjaman -->
 
         <!-- Modal List Peminjaman -->
         <div class="modal fade" id="listpeminjaman" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -181,7 +270,7 @@ LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
                                 ?>
                                     <tr>
                                         <td><?php echo $no; ?></td>
-                                        <td><?php echo $data['barang']; ?></td>
+                                        <td><?php echo $data['kode_barang']; ?></td>
                                         <td><?php echo $data['nama_barang']; ?></td>
                                         <td><?php echo $data['keterangan']; ?></td>
                                         <td><?php echo $data['stok']; ?></td>
@@ -193,6 +282,8 @@ LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
                                                 $status = "Disetujui";
                                             } elseif ($data['status'] == 3) {
                                                 $status = "Ditolak";
+                                            } else {
+                                                $status = "";
                                             }
                                             echo $status;
                                             ?>
