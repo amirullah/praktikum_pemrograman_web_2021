@@ -1,15 +1,6 @@
 <?php
 require "proses/koneksi.php";
-$select = mysqli_query($conn, "SELECT * FROM tb_barang brg
-LEFT JOIN tb_peminjaman pem ON brg.kode_barang=pem.barang
-LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
-LEFT JOIN tb_user usr ON pem.user=usr.id");
-
-$select1 = mysqli_query($conn, "SELECT * FROM tb_barang brg
-LEFT JOIN tb_peminjaman pem ON brg.kode_barang=pem.barang
-LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
-LEFT JOIN tb_user usr ON pem.user=usr.id
-WHERE username= '$_SESSION[username]'");
+$select = mysqli_query($conn, "SELECT * FROM tb_barang");
 ?>
 <!doctype html>
 <html lang="en">
@@ -43,17 +34,14 @@ WHERE username= '$_SESSION[username]'");
             <!-- Akhir sidebar -->
             <!-- Konten -->
             <div class="col-md-9">
-                <h2>Peminjaman</h2>
+                <h2>Profile</h2>
                 <div class="card">
                     <div class="card-header">
-                        Data Peminjaman
+                        Data Barang
                     </div>
                     <div class="card-body">
                         <button class="position-relative btn btn-success" data-bs-toggle="modal" data-bs-target="#tambahdatabarang">
-                            Tambah Peminjaman
-                        </button>
-                        <button class="position-relative btn btn-primary" data-bs-toggle="modal" data-bs-target="#listbarang">
-                            List Barang Pinjaman
+                            Tambah Data Barang
                         </button>
                         <table class="table table-striped table-hover">
                             <thead>
@@ -69,7 +57,7 @@ WHERE username= '$_SESSION[username]'");
                             <tbody>
                                 <?php
                                 $no = 0;
-                                foreach ($select1 as $data) {
+                                foreach ($select as $data) {
                                     $no++;
                                 ?>
                                     <tr>
@@ -113,7 +101,23 @@ WHERE username= '$_SESSION[username]'");
                                                         </div>
                                                         <div class="mb-3">
                                                             <label for="recipient-name" class="col-form-label">Kondisi Barang:</label>
-                                                            <input name="kondisi" type="number" class="form-control" id="recipient-name" value="<?php echo $data['kondisi'] ?>">
+                                                            <select name="kondisi" class="form-select" aria-label="Default select example">
+                                                                <?php
+                                                                if ($data['kondisi'] == 'Baik') {
+                                                                    echo '<option selected value="Baik">Baik</option>';
+                                                                    echo '<option value="Rusak">Rusak</option>';
+                                                                    echo '<option value="Hilang">Hilang</option>';
+                                                                } elseif ($data['kondisi'] == 'Rusak') {
+                                                                    echo '<option value="Baik">Baik</option>';
+                                                                    echo '<option selected value="Rusak">Rusak</option>';
+                                                                    echo '<option value="Hilang">Hilang</option>';
+                                                                } elseif ($data['kondisi'] == 'Hilang') {
+                                                                    echo '<option value="Baik">Baik</option>';
+                                                                    echo '<option value="Rusak">Rusak</option>';
+                                                                    echo '<option selected value="Hilang">Hilang</option>';
+                                                                }
+                                                                ?>
+                                                            </select>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
@@ -153,30 +157,35 @@ WHERE username= '$_SESSION[username]'");
             </div>
             <!-- Akhir konten -->
 
-            <!-- Modal Tambah Peminjaman-->
+            <!-- Modal Tambah Data Barang-->
             <div class="modal fade" id="tambahdatabarang" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Tambah Peminjaman</h5>
+                            <h5 class="modal-title" id="exampleModalLabel">Tambah Data Barang</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <form action="proses/proses_tambah_peminjaman.php" method="POST">
+                        <form action="proses/proses_tambah_databarang.php" method="POST">
                             <div class="modal-body">
                                 <div class="mb-3">
-                                    <label for="recipient-name" class="col-form-label">Nama Barang:</label>
-                                    <select name="kode_brg" class="form-select" aria-label="Default select example">
-                                        <?php
-                                        $query  = mysqli_query($conn, "SELECT * FROM tb_barang");
-                                        foreach ($query as $hasil) {
-                                            echo "<option value='$hasil[kode_barang]'>$hasil[nama_barang]</option>";
-                                        }
-                                        ?>
-                                    </select>
+                                    <label for="recipient-name" class="col-form-label">Kode Barang:</label>
+                                    <input name="kd_brg" type="number" class="form-control" id="recipient-name">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="recipient-name" class="col-form-label">Waktu Pengembalian:</label>
-                                    <input name="wkt_pengembalian" type="datetime-local" class="form-control">
+                                    <label for="recipient-name" class="col-form-label">Nama Barang:</label>
+                                    <input name="nm_brg" type="text" class="form-control" id="recipient-name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="recipient-name" class="col-form-label">Keterangan Barang:</label>
+                                    <input name="ket" type="text" class="form-control" id="recipient-name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="recipient-name" class="col-form-label">Kondisi Barang:</label>
+                                    <select name="kondisi" class="form-select" aria-label="Default select example">
+                                        <option value="Baik">Baik</option>
+                                        <option value="Rusak">Rusak</option>
+                                        <option value="Hilang">Hilang</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -187,121 +196,7 @@ WHERE username= '$_SESSION[username]'");
                     </div>
                 </div>
             </div>
-            <!-- Akhir Modal Tambah Peminjaman-->
-
-            <!-- Modal List Barang Pinjaman-->
-            <div class="modal fade" id="listbarang" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">List Barang Pinjaman</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <table class="table table-striped table-hover">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">No</th>
-                                        <th scope="col">Kode Barang</th>
-                                        <th scope="col">Nama Barang</th>
-                                        <th scope="col">Keterangan</th>
-                                        <th scope="col">Kondisi Barang</th>
-                                        <th scope="col">Status</th>
-                                        <th scope="col">Peminjam</th>
-                                        <th scope="col">Waktu Peminjaman</th>
-                                        <th scope="col">Waktu Pengembalian</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $no = 0;
-                                    foreach ($select as $data) {
-                                        $no++;
-                                    ?>
-                                        <tr>
-                                            <th scope="row"><?php echo $no ?></th>
-                                            <td><?php echo $data['kode_barang'] ?></td>
-                                            <td><?php echo $data['nama_barang'] ?></td>
-                                            <td><?php echo $data['keterangan'] ?></td>
-                                            <td><?php echo $data['kondisi'] ?></td>
-                                            <td><?php echo $data['status'] ?></td>
-                                            <td class="text-nowrap">
-                                                <?php echo $data['nim'] ?><br>
-                                                <?php echo $data['nama'] ?><br>
-                                                <?php echo $data['kelas'] ?><br>
-                                                <?php echo $data['prodi'] ?><br>
-                                            </td>
-                                            <td><?php echo $data['waktu_pinjam'] ?></td>
-                                            <td><?php echo $data['waktu_pengembalian'] ?></td>
-                                        </tr>
-                                        <!-- Modal Ubah Data Barang-->
-                                        <div class="modal fade" id="exampleModal<?php echo $no ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="exampleModalLabel">Ubah Data Barang</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <form action="proses/proses_edit_databarang.php" method="POST">
-                                                        <input type="hidden" name="kd_brg" value="<?php echo $data['kode_barang'] ?>">
-                                                        <div class="modal-body">
-                                                            <div class="mb-3">
-                                                                <label for="recipient-name" class="col-form-label">Kode Barang:</label>
-                                                                <input type="text" class="form-control" id="recipient-name" value="<?php echo $data['kode_barang'] ?>" disabled>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label for="recipient-name" class="col-form-label">Nama Barang:</label>
-                                                                <input name="nm_brg" type="text" class="form-control" id="recipient-name" value="<?php echo $data['nama_barang'] ?>">
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label for="recipient-name" class="col-form-label">Keterangan Barang:</label>
-                                                                <input name="ket" type="text" class="form-control" id="recipient-name" value="<?php echo $data['keterangan'] ?>">
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label for="recipient-name" class="col-form-label">Kondisi Barang:</label>
-                                                                <input name="kondisi" type="number" class="form-control" id="recipient-name" value="<?php echo $data['kondisi'] ?>">
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                            <button type="submit" class="btn btn-primary">Simpan</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- Akhir Modal Ubah Data Barang-->
-
-                                        <!-- Modal Hapus Data Barang-->
-                                        <div class="modal fade" id="ModalHapus<?php echo $no ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="exampleModalLabel">Hapus Data Barang</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        Apakah anda yakin ingin menghapus data barang "<?php echo $data['nama_barang'] ?>"?
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                        <a href="proses/proses_hapus_databarang.php?id=<?php echo $data['kode_barang'] ?>" class="btn btn-danger">Hapus</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- Akhir Modal Hapus Data Barang-->
-                                    <?php } ?>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keluar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Akhir Modal List Barang Pinjaman-->
+            <!-- Akhir Modal Tambah Data Barang-->
 
         </div>
     </div>
