@@ -63,6 +63,9 @@ WHERE username= '$_SESSION[username]'");
                                     <th scope="col">Nama Barang</th>
                                     <th scope="col">Keterangan</th>
                                     <th scope="col">Kondisi</th>
+                                    <th scope="col">Waktu Peminjaman</th>
+                                    <th scope="col">Waktu Pengembalian</th>
+                                    <th scope="col">Status</th>
                                     <th scope="col">Aksi</th>
                                 </tr>
                             </thead>
@@ -78,12 +81,27 @@ WHERE username= '$_SESSION[username]'");
                                         <td><?php echo $data['nama_barang'] ?></td>
                                         <td><?php echo $data['keterangan'] ?></td>
                                         <td><?php echo $data['kondisi'] ?></td>
+                                        <td><?php echo date("d-m-Y H:i:s", strtotime($data['waktu_pinjam'])) ?></td>
+                                        <td><?php echo date("d-m-Y H:i:s", strtotime($data['waktu_pengembalian'])) ?></td>
                                         <td>
-                                            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#exampleModal<?php echo $no ?>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                            <?php
+                                            if ($data['status'] == 1) echo "<span class='badge bg-secondary'>Dipending</span>";
+                                            elseif ($data['status'] == 2) echo "<span class='badge bg-success'>Disetujui</span>";
+                                            elseif ($data['status'] == 3) echo "<span class='badge bg-danger'>Ditolak</span>";
+                                            elseif ($data['status'] == 4) echo "<span class='badge bg-primary'>Dikembalikan</span>";
+                                            else echo " ";
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            if ($data['status'] == 1) $s = "";
+                                            else $s = "disabled";
+                                            ?>
+                                            <button <?php echo $s ?> class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#exampleModal<?php echo $no ?>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                                                     <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                                                     <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
                                                 </svg></button>
-                                            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#ModalHapus<?php echo $no ?>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                            <button <?php echo $s ?> class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#ModalHapus<?php echo $no ?>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
                                                     <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
                                                 </svg></button>
                                         </td>
@@ -169,7 +187,7 @@ WHERE username= '$_SESSION[username]'");
                                         <?php
                                         $query  = mysqli_query($conn, "SELECT * FROM tb_barang");
                                         foreach ($query as $hasil) {
-                                            echo "<option value='$hasil[kode_barang]'>$hasil[nama_barang]</option>";
+                                            echo "<option value='$hasil[kode_barang]'>$hasil[kode_barang] $hasil[nama_barang] $hasil[keterangan]</option>";
                                         }
                                         ?>
                                     </select>
@@ -224,7 +242,15 @@ WHERE username= '$_SESSION[username]'");
                                             <td><?php echo $data['nama_barang'] ?></td>
                                             <td><?php echo $data['keterangan'] ?></td>
                                             <td><?php echo $data['kondisi'] ?></td>
-                                            <td><?php echo $data['status'] ?></td>
+                                            <td>
+                                                <?php
+                                                if ($data['status'] == 1) echo "<span class='badge bg-warning'>Dipinjam</span>";
+                                                elseif ($data['status'] == 2) echo "<span class='badge bg-warning'>Dipinjam</span>";
+                                                elseif ($data['status'] == 3) echo "<span class='badge bg-primary'>Tersedia</span>";
+                                                elseif ($data['status'] == 4) echo "<span class='badge bg-primary'>Tersedia</span>";
+                                                else echo "<span class='badge bg-primary'>Tersedia</span>";
+                                                ?>
+                                            </td>
                                             <td class="text-nowrap">
                                                 <?php echo $data['nim'] ?><br>
                                                 <?php echo $data['nama'] ?><br>
