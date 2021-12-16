@@ -1,12 +1,21 @@
 <?php
 require "proses/session.php";
-$select = mysqli_query($conn, "SELECT * FROM tb_barang");
+// Query untuk tabel hasil tambah peminjaman 
+$select = mysqli_query($conn, "SELECT * FROM tb_peminjaman pem
+LEFT JOIN tb_barang brg ON pem.barang=brg.kode_barang
+LEFT JOIN tb_matakuliah mk ON pem.matakuliah=mk.kode_matakuliah
+LEFT JOIN tb_dosen dos ON mk.dosen=dos.nip
+LEFT JOIN tb_user usr ON pem.user=usr.id
+WHERE username='$_SESSION[username]'");
+// Akhir query untuk tabel hasil tambah peminjaman 
 
+// Query untuk tabel list peminjaman
 $sql    = mysqli_query($conn, "SELECT * FROM tb_peminjaman pem
 RIGHT JOIN tb_barang brg ON pem.barang=brg.kode_barang
 LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
 LEFT JOIN tb_matakuliah mk ON pem.matakuliah=mk.kode_matakuliah
 LEFT JOIN tb_dosen dos ON mk.dosen=dos.nip");
+// Akhir query untuk tabel list peminjaman
 ?>
 <!doctype html>
 <html lang="en">
@@ -42,7 +51,7 @@ LEFT JOIN tb_dosen dos ON mk.dosen=dos.nip");
             <div class="col-9">
                 <div class="card ms-1 mt-4">
                     <h5 class="card-header">
-                        Data Barang
+                        Data Peminjaman Barang
                     </h5>
                     <div class="card-body">
                         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tambahpeminjaman">Tambah Peminjaman</button>
@@ -52,9 +61,14 @@ LEFT JOIN tb_dosen dos ON mk.dosen=dos.nip");
                             <thead>
                                 <tr>
                                     <th scope="col">No</th>
+                                    <th scope="col">Kode Barang</th>
                                     <th scope="col">Gambar</th>
                                     <th scope="col">Nama Barang</th>
                                     <th scope="col">Keterangan</th>
+                                    <th scope="col">Waktu Peminjaman</th>
+                                    <th scope="col">Waktu Pengembalian</th>
+                                    <th scope="col">Matakuliah</th>
+                                    <th scope="col">Status</th>
                                     <th scope="col">Aksi</th>
                                 </tr>
                             </thead>
@@ -66,15 +80,31 @@ LEFT JOIN tb_dosen dos ON mk.dosen=dos.nip");
                                 ?>
                                     <tr>
                                         <td scope="row"><?php echo $no ?></td>
+                                        <td><?php echo $hasil['kode_barang']; ?></td>
                                         <td></td>
                                         <td><?php echo $hasil['nama_barang']; ?></td>
                                         <td><?php echo $hasil['keterangan']; ?></td>
+                                        <td><?php echo date("d-m-Y H:i:s", strtotime($hasil['waktu_peminjaman'])); ?></td>
+                                        <td><?php echo date("d-m-Y H:i:s", strtotime($hasil['waktu_pengembalian'])); ?></td>
+                                        <td><?php echo $hasil['nm_matakuliah'] . " - " . $hasil['nm_dosen']; ?></td>
                                         <td>
-                                            <button data-bs-toggle="modal" data-bs-target="#exampleModal<?php echo $no ?>" type="button" class="btn btn-warning"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                            <?php
+                                            if ($hasil['status'] == 1) echo "<span class='badge bg-secondary'>Pending</span>";
+                                            elseif ($hasil['status'] == 2) echo "<span class='badge bg-success'>Disetujui</span>";
+                                            elseif ($hasil['status'] == 3) echo "<span class='badge bg-danger'>Ditolak</span>";
+                                            elseif ($hasil['status'] == 4) echo "<span class='badge bg-primary'>Dikembalikan</span>";
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            if ($hasil['status'] != 1) $s = "disabled";
+                                            else $s = "";
+                                            ?>
+                                            <button <?php echo $s ?> data-bs-toggle="modal" data-bs-target="#exampleModal<?php echo $no ?>" type="button" class="btn btn-warning"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                                                     <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                                                     <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
                                                 </svg></button>
-                                            <button data-bs-toggle="modal" data-bs-target="#ModalDelete<?php echo $no ?>" type="button" class="btn btn-danger"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-x" viewBox="0 0 16 16">
+                                            <button <?php echo $s ?> data-bs-toggle="modal" data-bs-target="#ModalDelete<?php echo $no ?>" type="button" class="btn btn-danger"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-x" viewBox="0 0 16 16">
                                                     <path d="M6.854 7.146a.5.5 0 1 0-.708.708L7.293 9l-1.147 1.146a.5.5 0 0 0 .708.708L8 9.707l1.146 1.147a.5.5 0 0 0 .708-.708L8.707 9l1.147-1.146a.5.5 0 0 0-.708-.708L8 8.293 6.854 7.146z" />
                                                     <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z" />
                                                 </svg></button>
@@ -88,22 +118,35 @@ LEFT JOIN tb_dosen dos ON mk.dosen=dos.nip");
                                                     <h5 class="modal-title" id="exampleModalLabel">Edit Data</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
-                                                <form method="POST" action="proses/proses_edit_data_barang.php">
-                                                    <input type="hidden" name="id" value="<?php echo $hasil['kode_barang'] ?>">
+                                                <form method="POST" action="proses/proses_tambah_peminjaman.php">
                                                     <div class="modal-body">
                                                         <div class="mb-3">
-                                                            <label class="form-label">Kode Barang</label>
-                                                            <input class="form-control form-control" value="<?php echo $hasil['kode_barang'] ?>" disabled>
+                                                            <label class="form-label">Nama Barang</label>
+                                                            <select name="brg" class="form-select" aria-label="Default select example">
+                                                                <?php
+                                                                $query = mysqli_query($conn, "SELECT * FROM tb_barang");
+                                                                while ($hasil1 = mysqli_fetch_array($query)) {
+                                                                    echo "<option value='$hasil1[kode_barang]'>" . $hasil1['kode_barang'] . " " . $hasil1['nama_barang'] . "</option>";
+                                                                }
+                                                                ?>
+                                                            </select>
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label for="recipient-name" class="col-form-label">Recipient:</label>
-                                                            <input name="nm_brg" type="text" class="form-control" id="recipient-name" value="<?php echo $hasil['nama_barang'] ?>">
+                                                            <label class="form-label">Matakuliah</label>
+                                                            <select name="mk" class="form-select" aria-label="Default select example">
+                                                                <?php
+                                                                $query = mysqli_query($conn, "SELECT * FROM tb_matakuliah mk
+                                        LEFT JOIN tb_dosen dos ON mk.dosen=dos.nip");
+                                                                while ($hasil1 = mysqli_fetch_array($query)) {
+                                                                    echo "<option value='$hasil1[kode_matakuliah]'>" . $hasil1['kode_matakuliah'] . " " . $hasil1['nm_matakuliah'] . " - " . $hasil1['nm_dosen'] . "</option>";
+                                                                }
+                                                                ?>
+                                                            </select>
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label for="recipient-name" class="col-form-label">Recipient:</label>
-                                                            <input name="ket" type="text" class="form-control" id="recipient-name" value="<?php echo $hasil['keterangan'] ?>">
+                                                            <label class="form-label">Waktu Pengembalian</label>
+                                                            <input name="wkt_kembali" type="datetime-local" class="form-control" value="<?php echo date("d/m/Y H.i", strtotime($hasil['waktu_pengembalian'])) ?>">
                                                         </div>
-
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -175,6 +218,10 @@ LEFT JOIN tb_dosen dos ON mk.dosen=dos.nip");
                                         }
                                         ?>
                                     </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Waktu Pengembalian</label>
+                                    <input name="wkt_kembali" type="datetime-local" class="form-control">
                                 </div>
                             </div>
                             <div class="modal-footer">
