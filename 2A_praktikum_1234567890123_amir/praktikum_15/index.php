@@ -15,6 +15,8 @@ if (empty($_GET['x'])) {
     require "dosen.php";
 } elseif ($_GET['x'] == 'profile') {
     require "profile.php";
+} elseif ($_GET['x'] == 'riwayatpeminjaman') {
+    require "riwayat_peminjaman.php";
 } else {
     echo "<script>window.location='home';</script>";
 }
