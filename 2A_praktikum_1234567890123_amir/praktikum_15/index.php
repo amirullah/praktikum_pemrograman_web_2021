@@ -7,6 +7,8 @@ if (empty($_GET['x'])) {
     require "pinjam.php";
 } elseif ($_GET['x'] == 'mhs') {
     require "mahasiswa.php";
+} elseif ($_GET['x'] == 'peminjaman') {
+    require "data_peminjaman.php";
 } elseif ($_GET['x'] == 'barang') {
     require "barang.php";
 } elseif ($_GET['x'] == 'dosen') {
