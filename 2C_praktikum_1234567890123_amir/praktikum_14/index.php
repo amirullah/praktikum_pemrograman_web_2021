@@ -18,6 +18,8 @@ if (empty($_GET['x'])) {
     require "profile.php";
 } elseif ($_GET['x'] == 'databrg') {
     require "data_barang.php";
+} elseif ($_GET['x'] == 'datapeminjaman') {
+    require "data_peminjaman.php";
 } else {
     echo "<script>window.location='home';</script>";
 }
