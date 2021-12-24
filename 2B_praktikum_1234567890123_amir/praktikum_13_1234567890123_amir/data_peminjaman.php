@@ -122,8 +122,9 @@ LEFT JOIN tb_mahasiswa mhs ON pem.user=mhs.id_user
                                                     <h5 class="modal-title" id="exampleModalLabel">Setujui Peminjaman</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
-                                                <form method="POST" action="proses/proses_tambah_peminjaman.php">
+                                                <form method="POST" action="proses/proses_setujui_peminjaman.php">
                                                     <div class="modal-body">
+                                                        <input class="form-control" type="hidden" name="kd_brg" value="<?php echo $data['kode_barang'] ?>">
                                                         <div class="mb-3">
                                                             <label class="form-label">Nama Barang</label>
                                                             <input disabled class="form-control" type="text" name="kd_brg" value="<?php echo $data['kode_barang'] . " " . $data['nama_barang'] . " " . $data['keterangan'] ?>">
